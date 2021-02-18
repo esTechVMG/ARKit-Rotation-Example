@@ -19,25 +19,27 @@ class ViewController: UIViewController {
         self.sceneView.session.run(configuration)
     }
     override func viewDidAppear(_ animated: Bool) {
-        let sun = planet(geometry: SCNSphere(radius: 0.25), diffuse: UIImage(named: "sun"), specular: nil, emission: nil, normal: nil, position: SCNVector3(0,0,0), name: "Sun")
-        
+        let sun = planet(radius:0.2, diffuse: UIImage(named: "sun"), specular: nil, emission: nil, normal: nil, position: SCNVector3(0,0,-1), name: "Sun")
+        //Orbit Nodes
+        let planetNodes:[SCNNode]=[
+            planet(radius:0.05, diffuse: UIImage(named: "earth_daymap"), specular: UIImage(named: "earth_specular_map"), emission: UIImage(named: "earth_clouds"), normal: UIImage(named: "earth_normal_map"), position: SCNVector3(0,0,-2), name: "Earth"),
+            planet(radius:0.05, diffuse: UIImage(named: "venus_surface"), specular: nil, emission: UIImage(named: "venus_atmosphere"), normal: nil, position: SCNVector3(0, 0, -1.5), name: "Venus"),
+            planet(radius:0.05, diffuse: UIImage(named: "mars"), specular: nil, emission: nil, normal: nil, position: SCNVector3(0, 0, -2.5), name: "Mars")
+        ]
+        let orbitNodes:[SCNNode] = Array(repeating: SCNNode(), count: planetNodes.count)
+        let orbitSpeeds:[Double] = [1,400.457,600.948]
+        let rotationSpeeds:[Double] = [8.0,3.5,5.6]
+        for n in 0...planetNodes.count-1 {
+            
+            orbitNodes[n].position = sun.position
+            //planetNodes[n].rotate(by: SCNQuaternion(0, -1, 0, 360.degreesToRadians), aroundTarget: sun.position) //Work in progress
+            orbitNodes[n].runAction( rotation(time: 8))
+            orbitNodes[n].addChildNode(planetNodes[n])
+            planetNodes[n].runAction(rotation(time: rotationSpeeds[n]))
+            sun.addChildNode(orbitNodes[n])
+        }
         self.sceneView.scene.rootNode.addChildNode(sun)
         
-        
-        let earthParent = SCNNode()
-        earthParent.position = sun.position
-        sceneView.scene.rootNode.addChildNode(earthParent)
-        let actionEarthParent = self.rotation(time: 8)
-        earthParent.runAction(actionEarthParent)
-        
-        //Nodo Tierra
-        let earth = planet(geometry: SCNSphere(radius: 0.05), diffuse: UIImage(named: "earth_daymap"), specular: UIImage(named: "earth_specular_map"), emission: UIImage(named: "earth_clouds"), normal: UIImage(named: "earth_normal_map"), position: SCNVector3(0,0,-1), name: "Earth")
-        earthParent.addChildNode(earth)
-        
-        earth.runAction(rotation(time: 8))
-        
-        
-        //Not work idk why
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(rec:)))
         
         sceneView.addGestureRecognizer(tap)
@@ -54,9 +56,9 @@ class ViewController: UIViewController {
         }
     }
     
-    func planet(geometry:SCNGeometry, diffuse: UIImage?, specular:UIImage?, emission:UIImage?, normal:UIImage?, position:SCNVector3, name:String?) -> SCNNode {
+    func planet(radius:Double, diffuse: UIImage?, specular:UIImage?, emission:UIImage?, normal:UIImage?, position:SCNVector3, name:String?) -> SCNNode {
         let planet = SCNNode()
-        planet.geometry = SCNSphere(radius: 0.05)
+        planet.geometry = SCNSphere(radius: CGFloat(radius))
         planet.geometry?.firstMaterial?.diffuse.contents = diffuse
         planet.geometry?.firstMaterial?.specular.contents = specular
         planet.geometry?.firstMaterial?.emission.contents = emission
