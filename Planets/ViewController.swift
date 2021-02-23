@@ -26,18 +26,27 @@ class ViewController: UIViewController {
             planet(radius:0.05, diffuse: UIImage(named: "venus_surface"), specular: nil, emission: UIImage(named: "venus_atmosphere"), normal: nil, position: SCNVector3(0, 0, -1.5), name: "Venus"),
             planet(radius:0.05, diffuse: UIImage(named: "mars"), specular: nil, emission: nil, normal: nil, position: SCNVector3(0, 0, -2.5), name: "Mars")
         ]
-        let orbitNodes:[SCNNode] = Array(repeating: SCNNode(), count: planetNodes.count)
-        let orbitSpeeds:[Double] = [1,400.457,600.948]
+        var orbitNodes:[SCNNode] = Array(repeating: SCNNode(), count: planetNodes.count)
+        for n in 0...planetNodes.count-1{
+            orbitNodes[n] = SCNNode()
+        }
+        let moon = planet(radius: 0.02, diffuse: UIImage(named: "moon"), specular: nil, emission: nil, normal: nil, position: SCNVector3(0,0,-0.1), name: "Moon")
+        //moon.runAction(rotation(time: 2)) //Planet Node Index 0 is the earth
+        planetNodes[0].addChildNode(moon)
+        
+        let orbitSpeeds:[Double] = [25,30,35]
         let rotationSpeeds:[Double] = [8.0,3.5,5.6]
         for n in 0...planetNodes.count-1 {
-            
             orbitNodes[n].position = sun.position
             //planetNodes[n].rotate(by: SCNQuaternion(0, -1, 0, 360.degreesToRadians), aroundTarget: sun.position) //Work in progress
-            orbitNodes[n].runAction( rotation(time: 8))
+            orbitNodes[n].runAction( rotation(time: orbitSpeeds[n]))
             orbitNodes[n].addChildNode(planetNodes[n])
             planetNodes[n].runAction(rotation(time: rotationSpeeds[n]))
             sun.addChildNode(orbitNodes[n])
         }
+        
+        
+        
         self.sceneView.scene.rootNode.addChildNode(sun)
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(rec:)))
